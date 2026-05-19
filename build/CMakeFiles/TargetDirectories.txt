@@ -1,0 +1,3 @@
+/Users/eason/Documents/CS/Memory-Alligator/build/CMakeFiles/test.dir
+/Users/eason/Documents/CS/Memory-Alligator/build/CMakeFiles/edit_cache.dir
+/Users/eason/Documents/CS/Memory-Alligator/build/CMakeFiles/rebuild_cache.dir
