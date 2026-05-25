@@ -4,7 +4,7 @@
 
 #define MMAP_THRESHOLD 128 * 1024
 #define BLOCK_SIZE (sizeof(struct mem_block))
-
+#define INCREMENT 256
 const size_t BLOCK_INFO = sizeof(struct mem_block);
 static struct mem_block *free_list = NULL;
 
@@ -19,29 +19,34 @@ void *emalloc(size_t size){
         return NULL;
     }
 
-    size = (size + 7) & ~7;
-    size_t TOTAL_SIZE = size + BLOCK_SIZE; // needed or not?
+    size = (size + 7) & ~7; // align the bytes
+    size_t TOTAL_SIZE = size + BLOCK_SIZE; 
     
     struct mem_block *curr_block = free_list;
-    struct mem_block *prev_block = NULL;
 
-    while(curr_block){
+    // employs a first fit algorithm
+    while(curr_block != NULL){
        if(TOTAL_SIZE <= curr_block->size){
 
+            if (curr_block->prev != NULL){
+                curr_block->prev->next = curr_block->next;
+            }
+            else{
+                free_list = curr_block->next;
+            }
+            return (void *)(curr_block + 1);
        }
-        
     }
-
-    // couldn't find avail memory size, expand program break
-    if (curr_block == NULL){
-        struct mem_block *new_block = (struct mem_block *)sbrk(256); 
-        if(new_block == (void*)-1){
-            return NULL;
-        }
+    
+    struct mem_block *new_block = (struct mem_block *)sbrk(INCREMENT);
+    if (new_block == (void*) - 1){
+        printf("sbrk failed \n");
+        return NULL;
     }
-
-    struct mem_block *block = (struct mem_block*)new_block;
-    block->size = size;
+    new_block->size = INCREMENT-BLOCK_SIZE;
+    new_block->next = NULL;
+    new_block->prev = NULL:
+    new_block->isFree = 0;
 
     return (void*)(block + 1);
 }
