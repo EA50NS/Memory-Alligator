@@ -5,8 +5,10 @@
 #define MMAP_THRESHOLD 128 * 1024
 #define BLOCK_SIZE (sizeof(struct mem_block))
 #define INCREMENT 256
+
 const size_t BLOCK_INFO = sizeof(struct mem_block);
 static struct mem_block *free_list = NULL;
+static struct mem_block *chosen_block = NULL;
 
 void printf_debug(size_t bytes){
     printf("Allocated %zu bytes\n", bytes);
@@ -34,8 +36,16 @@ void *emalloc(size_t size){
             else{
                 free_list = curr_block->next;
             }
-            return (void *)(curr_block + 1);
+
+            if (curr_block->next != NULL){
+                curr_block->next->prev = curr_block->prev;
+            }
+            // should something different happen if next IS null?
+
+            chosen_block = curr_block;
+            //return (void *)(curr_block + 1);
        }
+       curr_block = curr_block->next;
     }
     
     struct mem_block *new_block = (struct mem_block *)sbrk(INCREMENT);
@@ -45,10 +55,12 @@ void *emalloc(size_t size){
     }
     new_block->size = INCREMENT-BLOCK_SIZE;
     new_block->next = NULL;
-    new_block->prev = NULL:
+    new_block->prev = NULL;
     new_block->isFree = 0;
 
-    return (void*)(block + 1);
+
+
+    return (void*)(new_block + 1);
 }
 
 void efree(void *ptr){
