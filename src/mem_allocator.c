@@ -19,16 +19,25 @@ void *esplit(struct mem_block *block, size_t size){
     if(block->size >= size + BLOCK_SIZE + 8){
         struct mem_block *remainder = (struct mem_block*)((char *)(block+1) + size);
         remainder->size = block->size - size - BLOCK_SIZE;
+        remainder->prev = NULL;
+        remainder->next = NULL;
+        remainder->isFree = 1;
+
         block->size = size;
+        block->isFree = 0;
 
         // add remainder block to free list
         if (free_list == NULL){
+            remainder->next = NULL;
             free_list = remainder;
         }
         else{
             free_list->prev = remainder;
             remainder->next = free_list;
+            free_list = remainder;
         }
+
+        return (void*)(block + 1);
     }
 }
 
@@ -61,6 +70,7 @@ void *emalloc(size_t size){
             // should something different happen if next IS null?
 
             chosen_block = curr_block;
+            esplit(chosen_block, size);
             //return (void *)(curr_block + 1);
        }
        curr_block = curr_block->next;
@@ -88,9 +98,6 @@ void *emalloc(size_t size){
         seeker = new_block; // seeker that went to end of linked list now points to newly allocated block;
     }
     esplit(new_block, size);
-
-    // TODO
-    // IMPLEMENT esplit() function
 
 
     return (void*)(new_block + 1);
