@@ -24,6 +24,7 @@ void *esplit(struct mem_block *block, size_t size){
         remainder->isFree = 1;
 
         block->size = size;
+        block->isFree = 0;
 
         // add remainder block to free list
         if (free_list == NULL){
@@ -87,20 +88,7 @@ void *emalloc(size_t size){
     new_block->prev = NULL;
     new_block->isFree = 0;
 
-    // inital allocation where free_list is empty
-    if (free_list == NULL){
-        free_list = new_block;
-    }
-    else{ // allocation event where large enough size was not found
-        struct mem_block *seeker = free_list;
-        while (seeker->next != NULL){
-            seeker = seeker->next;
-        }
-        seeker->next = new_block;
-        new_block->prev = seeker;
-    }
-    esplit(new_block, size);
-
+    esplit(new_block, size); // no need to add new_block to list, esplit handles that.
     return (void*)(new_block + 1);
 }
 
