@@ -88,8 +88,7 @@ void *emalloc(size_t size){
     new_block->prev = NULL;
     new_block->isFree = 0;
 
-    esplit(new_block, size); // no need to add new_block to list, esplit handles that.
-    return (void*)(new_block + 1);
+    return esplit(new_block, size); // no need to add new_block to list, esplit handles that.
 }
 
 void efree(void *ptr){
