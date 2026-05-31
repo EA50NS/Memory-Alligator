@@ -15,6 +15,24 @@ void printf_debug(size_t bytes){
 }
 
 
+void *esplit(struct mem_block *block, size_t size){
+    if(block->size >= size + BLOCK_SIZE + 8){
+        struct mem_block *remainder = (struct mem_block*)((char *)(block+1) + size);
+        remainder->size = block->size - size - BLOCK_SIZE;
+        block->size = size;
+
+        // add remainder block to free list
+        if (free_list == NULL){
+            free_list = remainder;
+        }
+        else{
+            free_list->prev = remainder;
+            remainder->next = free_list;
+        }
+    }
+}
+
+
 void *emalloc(size_t size){
     if (size <= 0){
         printf("invalid size");
@@ -58,6 +76,21 @@ void *emalloc(size_t size){
     new_block->prev = NULL;
     new_block->isFree = 0;
 
+    // inital allocation where free_list is empty
+    if (free_list == NULL){
+        free_list = new_block;
+    }
+    else{ // allocation event where large enough size was not found
+        struct mem_block *seeker = free_list;
+        while (seeker->next != NULL){
+            seeker = seeker->next;
+        }
+        seeker = new_block; // seeker that went to end of linked list now points to newly allocated block;
+    }
+    esplit(new_block, size);
+
+    // TODO
+    // IMPLEMENT esplit() function
 
 
     return (void*)(new_block + 1);

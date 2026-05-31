@@ -1,5 +1,6 @@
 void *emalloc(size_t);
 void efree(void *);
+void *esplit(struct mem_block *toBeSplit, size_t size;);
 
 void printf_debug(size_t);
 
