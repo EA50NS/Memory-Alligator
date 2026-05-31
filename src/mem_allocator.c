@@ -24,7 +24,6 @@ void *esplit(struct mem_block *block, size_t size){
         remainder->isFree = 1;
 
         block->size = size;
-        block->isFree = 0;
 
         // add remainder block to free list
         if (free_list == NULL){
@@ -39,6 +38,8 @@ void *esplit(struct mem_block *block, size_t size){
 
         return (void*)(block + 1);
     }
+    block->isFree = 0;
+    return (void*)(block +1);
 }
 
 
@@ -70,8 +71,8 @@ void *emalloc(size_t size){
             // should something different happen if next IS null?
 
             chosen_block = curr_block;
-            esplit(chosen_block, size);
-            //return (void *)(curr_block + 1);
+            return esplit(chosen_block, size);
+
        }
        curr_block = curr_block->next;
     }
@@ -95,10 +96,10 @@ void *emalloc(size_t size){
         while (seeker->next != NULL){
             seeker = seeker->next;
         }
-        seeker = new_block; // seeker that went to end of linked list now points to newly allocated block;
+        seeker->next = new_block;
+        new_block->prev = seeker;
     }
     esplit(new_block, size);
-
 
     return (void*)(new_block + 1);
 }
