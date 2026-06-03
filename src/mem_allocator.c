@@ -95,10 +95,20 @@ void efree(void *ptr){
     if (ptr == NULL){
         return;
     }
+ 
+    struct mem_block *put_back = (struct mem_block*)((char *)ptr - BLOCK_SIZE);
+    put_back->isFree = 1; 
 
-    struct mem_block *block = (struct mem_block*)ptr - 1;
+    if (free_list = NULL){
+        free_list = put_back;
+        put_back->next = NULL;
+        put_back->prev = NULL:
+    }
+    else{
+        free_list->prev = put_back;
+        put_back->next = free_list; 
+        put_back->prev = NULL;
+    }
 
-    // Add block to the beginning of the list.
-    block->next = free_list;
-    free_list = block;
+
 }
