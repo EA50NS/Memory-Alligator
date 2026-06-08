@@ -14,7 +14,6 @@ void printf_debug(size_t bytes){
     printf("Allocated %zu bytes\n", bytes);
 }
 
-
 void *esplit(struct mem_block *block, size_t size){
     if(block->size >= size + BLOCK_SIZE + 8){
         struct mem_block *remainder = (struct mem_block*)((char *)(block+1) + size);
@@ -55,17 +54,17 @@ void ecoalesce(struct mem_block *block){
             right_block->prev->next = right_block->next;
         }
         else{
-            free_list = right_block->next;
+            free_list_head = right_block->next;
         }
         if(right_block->next != NULL){
             right_block->next->prev = right_block->prev;
         }
     }
 
-    struct mem_block *curr = free_list;
+    struct mem_block *curr = free_list_head;
 
     while(curr != NULL){
-        struct mem_block *right_curr = (struct mem_block*)((char*)curr + BLOCK_SIZE + block->size);
+        struct mem_block *right_curr = (struct mem_block*)((char*)curr + BLOCK_SIZE + curr->size);
 
         if(right_curr == block){
             curr->size += BLOCK_SIZE + right_curr->size;
@@ -74,7 +73,7 @@ void ecoalesce(struct mem_block *block){
                 block->prev->next = block->next;
             }
             else{
-                free_list = block;
+                free_list_head = block;
             }
 
             if(block->next != NULL){
@@ -154,9 +153,6 @@ void efree(void *ptr){
         free_list_head = put_back;
     }
 
-
     //coaslescing
-
-
-
+    ecoalesce(put_back);
 }
