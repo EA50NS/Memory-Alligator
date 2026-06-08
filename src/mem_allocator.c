@@ -7,7 +7,7 @@
 #define INCREMENT 256
 
 const size_t BLOCK_INFO = sizeof(struct mem_block);
-static struct mem_block *free_list = NULL;
+static struct mem_block *free_list_head = NULL;
 static struct mem_block *chosen_block = NULL;
 
 void printf_debug(size_t bytes){
@@ -27,14 +27,14 @@ void *esplit(struct mem_block *block, size_t size){
         block->isFree = 0;
 
         // add remainder block to free list
-        if (free_list == NULL){
+        if (free_list_head == NULL){
             remainder->next = NULL;
-            free_list = remainder;
+            free_list_head = remainder;
         }
         else{
-            free_list->prev = remainder;
-            remainder->next = free_list;
-            free_list = remainder;
+            free_list_head->prev = remainder;
+            remainder->next = free_list_head;
+            free_list_head = remainder;
         }
 
         return (void*)(block + 1);
@@ -43,6 +43,21 @@ void *esplit(struct mem_block *block, size_t size){
     return (void*)(block +1);
 }
 
+
+void ecoalesce(struct mem_block *block){
+    void *heap_border = sbrk(0);
+    struct mem_block *right_block = (struct mem block*)((char*)block + BLOCK_SIZE + block->size); 
+
+    if ((void*) right_block < sbrk(0) && right_block->isFree == 1){
+        block->size += right_block->size;
+        block->next = right_block->next;
+    }
+    
+
+    
+    
+
+}
 
 void *emalloc(size_t size){
     if (size <= 0){
@@ -53,7 +68,7 @@ void *emalloc(size_t size){
     size = (size + 7) & ~7; // align the bytes
     size_t TOTAL_SIZE = size + BLOCK_SIZE; 
     
-    struct mem_block *curr_block = free_list;
+    struct mem_block *curr_block = free_list_head;
 
     // employs a first fit algorithm
     while(curr_block != NULL){
@@ -63,7 +78,7 @@ void *emalloc(size_t size){
                 curr_block->prev->next = curr_block->next;
             }
             else{
-                free_list = curr_block->next;
+                free_list_head = curr_block->next;
             }
 
             if (curr_block->next != NULL){
@@ -99,16 +114,21 @@ void efree(void *ptr){
     struct mem_block *put_back = (struct mem_block*)((char *)ptr - BLOCK_SIZE);
     put_back->isFree = 1; 
 
-    if (free_list = NULL){
-        free_list = put_back;
+    if (free_list_head == NULL){
+        free_list_head = put_back;
         put_back->next = NULL;
-        put_back->prev = NULL:
-    }
-    else{
-        free_list->prev = put_back;
-        put_back->next = free_list; 
         put_back->prev = NULL;
     }
+    else{
+        free_list_head->prev = put_back;
+        put_back->next = free_list_head; 
+        put_back->prev = NULL;
+        free_list_head = put_back;
+    }
+
+
+    //coaslescing
+
 
 
 }
