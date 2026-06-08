@@ -46,15 +46,43 @@ void *esplit(struct mem_block *block, size_t size){
 
 void ecoalesce(struct mem_block *block){
     void *heap_border = sbrk(0);
-    struct mem_block *right_block = (struct mem block*)((char*)block + BLOCK_SIZE + block->size); 
+    struct mem_block *right_block = (struct_mem block*)((char*)block + BLOCK_SIZE + block->size); 
 
-    if ((void*) right_block < sbrk(0) && right_block->isFree == 1){
-        block->size += right_block->size;
-        block->next = right_block->next;
+    if ((void*) right_block < heap_border && right_block->isFree == 1){
+        block->size += BLOCK_SIZE + right_block->size;
+    
+        if(right_block->prev != NULL){
+            right_block->prev->next = block->next;
+        }
+        else{
+            free_list = right_block->next;
+        }
+        if(right_block->next != NULL){
+            right_block->next->prev = right_block->prev;
+        }
     }
-    
 
-    
+    struct mem_block curr* = free_list;
+    struct mem_block prev* = NULL;
+
+    while(curr != NULL && curr < block){
+        prev = curr->prev;
+        curr = curr->next;
+    }
+    struct mem_block *curr_right= (struct mem_block*)((char*)curr + BLOCK_SIZE + curr->size);
+    if(curr_right->isFree == 1){
+        curr->size += BLOCK_SIZE + curr_right->size;
+
+        if(curr->prev != NULL){
+            curr->prev->next = curr_right->next;
+        }
+        else{
+            free_list = curr;
+        }
+        if (curr->next != NULL){
+            curr->next->prev = curr_right->prev;
+        }
+    }
     
 
 }
